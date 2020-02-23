@@ -10,8 +10,8 @@ class Car:
         self.__long = long
         self.__timestamp = timestamp
         self.__car_index = car_index
+        self.__position = 0
         self.distance_travelled = 0
-        self.position = 0
         self.curr_speed = 0
 
     def generate_speed_report(self):
@@ -23,17 +23,16 @@ class Car:
         }
         return json.dumps(res)
 
-    def generate_position_report(self, ts):
+    def generate_position_report(self):
         res = {
-          'timestamp': ts,
+          'timestamp': self.__timestamp,
           'carIndex': self.__car_index,
           'type': 'POSITION',
-          'value': self.position
+          'value': self.__position
         }
         return json.dumps(res)
 
-
-    def update_car(self, car_coordinates:dict):
+    def update_car_coordinates(self, car_coordinates:dict):
         if CarCoordinates.validate_car_coordinates(car_coordinates) and \
            car_coordinates.get('carIndex') == self.__car_index:
             # Speed in miles per hour
@@ -57,3 +56,15 @@ class Car:
 
     def get_car_index(self):
         return self.__car_index
+
+    def get_car_position(self):
+        return self.__position
+
+    def set_car_position(self, pos):
+        self.__position = pos
+
+    def __str__(self):
+        return "Car No: " +\
+               str(self.__car_index) + ", Race Position: " + \
+               str(self.__position) + " Distance travelled: " + \
+               str(self.distance_travelled)
