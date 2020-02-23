@@ -1,5 +1,5 @@
-from apps.fan_engagement.models.car import Car
-from apps.fan_engagement.models.car_coordinates import CarCoordinates
+from models.car import Car
+from models.car_coordinates import CarCoordinates
 import paho.mqtt.client as mqtt
 import json
 import random
@@ -24,7 +24,6 @@ class Race:
             self.__drs_messages = json.load(file)
         with open('messages/team_radios.json') as file:
             self.__team_radios = json.load(file)
-
 
     def __add_car_to_the_race(self, car: Car):
         self.__cars[car.get_car_index()] = car
@@ -110,8 +109,8 @@ class Race:
                     discrepant_car_indices.append(c.get_car_index())
 
     def publish_car_status(self, report):
-        self.__client.publish(topic='carStatus', payload=report)
+        self.__client.publish(topic= 'carStatus', payload=report)
 
     def publish_event(self, event):
-        self.__client.publish(topic='events', payload=event)
+        self.__client.publish(topic= 'events', payload=event)
         pass
