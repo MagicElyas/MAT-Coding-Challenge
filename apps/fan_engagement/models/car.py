@@ -1,18 +1,22 @@
 import json
+import math
+from apps.fan_engagement.models.car_coordinates import CarCoordinates
+from geopy import distance
 
 
 class Car:
-    def __init__(self, lat: float, long: float, car_index: int):
+    def __init__(self, lat: float, long: float, timestamp: float, car_index: int):
         self.__lat = lat
         self.__long = long
+        self.__timestamp = timestamp
         self.__car_index = car_index
         self.distance_travelled = 0
         self.position = 0
         self.curr_speed = 0
 
-    def generate_speed_report(self, ts):
+    def generate_speed_report(self):
         res = {
-          'timestamp': ts,
+          'timestamp': self.__timestamp,
           'carIndex': self.__car_index,
           'type': 'SPEED',
           'value': self.curr_speed
@@ -27,6 +31,29 @@ class Car:
           'value': self.position
         }
         return json.dumps(res)
+
+
+    def update_car(self, car_coordinates:dict):
+        if CarCoordinates.validate_car_coordinates(car_coordinates) and \
+           car_coordinates.get('carIndex') == self.__car_index:
+            # Speed in miles per hour
+            time_passed = (car_coordinates.get('timestamp') - self.__timestamp) / 1000  # In seconds
+            # Avoiding 0 division
+            if time_passed > 0:
+                p1 = (self.__lat, self.__long)
+                p2 = (car_coordinates.get('location').get('lat'), car_coordinates.get('location').get('long'))
+                distance_covered = distance.distance(p1, p2).miles  # In miles
+                mph = distance_covered / (time_passed / 3600)
+            else:
+                distance_covered = 0
+                mph = 0
+
+            # TODO: Update the position
+            self.distance_travelled = self.distance_travelled + distance_covered
+            self.curr_speed = mph
+            self.__lat = car_coordinates.get('location').get('lat')
+            self.__long = car_coordinates.get('location').get('long')
+            self.__timestamp = car_coordinates.get('timestamp')
 
     def get_car_index(self):
         return self.__car_index
