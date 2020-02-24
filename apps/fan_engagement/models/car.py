@@ -1,6 +1,6 @@
 import json
 import math
-from apps.fan_engagement.models.car_coordinates import CarCoordinates
+from models.car_coordinates import CarCoordinates
 from geopy import distance
 
 
@@ -62,6 +62,9 @@ class Car:
 
     def set_car_position(self, pos):
         self.__position = pos
+
+    def get_car_timestamp(self):
+        return self.__timestamp
 
     def __str__(self):
         return "Car No: " +\

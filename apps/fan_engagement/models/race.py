@@ -1,5 +1,5 @@
-from apps.fan_engagement.models.car import Car
-from apps.fan_engagement.models.car_coordinates import CarCoordinates
+from models.car import Car
+from models.car_coordinates import CarCoordinates
 import paho.mqtt.client as mqtt
 import json
 import random
@@ -13,11 +13,13 @@ TEAM_RADIO_MESSAGE_PROB = 10
 
 
 class Race:
-    def __init__(self, client: mqtt.Client):
+    def __init__(self, client: mqtt.Client, car_topic, event_topic):
         self.__cars = {}  # Using a dictionary for fast search
         self.__client = client
         self.__car_positions = []
         self.__race_distance = 0
+        self.__car_topic = car_topic
+        self.__event_topic = event_topic
         with open('messages/overtakes.json') as file:
             self.__overtakes_reactions = json.load(file)
         with open('messages/drs.json') as file:
@@ -25,14 +27,12 @@ class Race:
         with open('messages/team_radios.json') as file:
             self.__team_radios = json.load(file)
 
-
     def __add_car_to_the_race(self, car: Car):
         self.__cars[car.get_car_index()] = car
 
     def update_car_info(self, car_coordinates: dict):
         if CarCoordinates.validate_car_coordinates(car_coordinates):
             if car_coordinates.get('carIndex') in self.__cars.keys():
-                self.__assign_position(float(car_coordinates.get('timestamp')))
                 car_to_update = self.__cars.get(car_coordinates.get('carIndex'))
             else:
                 car_to_update = Car(float(car_coordinates.get('location').get('lat')),
@@ -41,7 +41,7 @@ class Race:
                                     int(car_coordinates.get('carIndex')))
                 self.__add_car_to_the_race(car_to_update)
             car_to_update.update_car_coordinates(car_coordinates)
-
+            self.__assign_position(float(car_coordinates.get('timestamp')))
             # Reporting
             if car_to_update.get_car_position() != 0:
                 self.publish_car_status(car_to_update.generate_position_report())
@@ -110,8 +110,18 @@ class Race:
                     discrepant_car_indices.append(c.get_car_index())
 
     def publish_car_status(self, report):
-        self.__client.publish(topic='carStatus', payload=report)
+        self.__client.publish(topic= self.__car_topic, payload=report)
 
     def publish_event(self, event):
-        self.__client.publish(topic='events', payload=event)
+        self.__client.publish(topic= self.__event_topic, payload=event)
         pass
+    
+    def get_participants(self):
+        return self.__cars
+    
+    def get_race_distance(self):
+        return self.__race_distance
+    
+    def get_client(self):
+        return self.__client
+
