@@ -2,5 +2,7 @@
   "Car {} is now on DRS zone",
   "Car {} is closing up to the car ahead, DRS available for this driver",
   "Wow, Car {} has maintained a really good pace over the last minutes, now he han use DRS!",
-  "DRS is available for Car {}"
+  "DRS is available for Car {}",
+  "Car {} is closing up!, now he has DRS",
+  "Car {} has reduced the gap under 1 second, he can now use DRS"
 ]

@@ -10,6 +10,7 @@ DRS_ZONE = 0.01
 # Probability of messages
 DRS_MESSAGE_PROB = 30
 TEAM_RADIO_MESSAGE_PROB = 10
+WEATHER_MESSAGE_PROB = 1 #1/1000
 
 
 class Race:
@@ -26,6 +27,8 @@ class Race:
             self.__drs_messages = json.load(file)
         with open('messages/team_radios.json') as file:
             self.__team_radios = json.load(file)
+        with open('messages/weather.json') as file:
+            self.__weather = json.load(file)
 
     def __add_car_to_the_race(self, car: Car):
         self.__cars[car.get_car_index()] = car
@@ -86,6 +89,15 @@ class Race:
             event = {
                 'timestamp': timestamp,
                 'text': self.__team_radios[random.randint(0, len(self.__team_radios))].format(car_index)
+            }
+            self.publish_event(json.dumps(event))
+
+    def __throw_weather_events(self,timestamp):
+        n = random.randint(0,1000) #Rare event
+        if n < WEATHER_MESSAGE_PROB:
+            event = {
+                'timestamp': timestamp,
+                'text': self.__weather[random.randint(0, len(self.__weather))]
             }
             self.publish_event(json.dumps(event))
 
