@@ -24,7 +24,7 @@ def connect_to_broker(broker):
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect(broker)
-    race = Race(client)
+    race = Race(client,'carStatus', 'events')
     print(type(client))
     client.user_data_set(race)
     client.loop_forever()
