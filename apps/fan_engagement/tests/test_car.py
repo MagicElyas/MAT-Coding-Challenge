@@ -8,7 +8,7 @@ class TestCar:
     def test_generate_speed_report_when_called__returns_valid_object(self):
         car = Car(0, 0, 0, 1)
         res = car.generate_speed_report()
-        assert res is not None
+        assert res
 
     def test_generate_speed_report_when_called__returns_speed_type_report(self):
         car = Car(0, 0, 0, 1)
