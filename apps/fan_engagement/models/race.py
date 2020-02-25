@@ -8,7 +8,7 @@ import math
 DRS_DISTANCE = 2
 DRS_ZONE = 0.01
 # Probability of messages
-DRS_MESSAGE_PROB = 30
+DRS_MESSAGE_PROB = 5
 TEAM_RADIO_MESSAGE_PROB = 10
 WEATHER_MESSAGE_PROB = 1 #1/1000
 
@@ -66,6 +66,8 @@ class Race:
         self.__race_distance = car_positions[0].distance_travelled
         self.__throw_event_if_positions_changed(car_positions, old_positions, timestamp)
         self.__car_positions = car_positions
+        #Weather events
+        self.__throw_weather_events(timestamp)
         if self.__race_distance > DRS_DISTANCE:
             # DRS events
             self.__throw_drs_events(timestamp)
