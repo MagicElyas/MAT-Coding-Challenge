@@ -29,6 +29,19 @@ With those files the project will:
 - Restart the docker-compose in case it was running before
 - Launch the Challenge MQTT service.
 
+# Testing
+I've developed unit tests as my interviewers asked me for in the interview. TO run them we just need to navigate to the MAT-Coding-Challenge/apps/fan_engagement and run the following commands:
+```console
+$ pipenv shell
+$ py.test .\tests\
+```
+Note that since we are using pipenv, this command should be run after the execution of the .bat or .sh file, or rather install pipenv with pip:
+
+```console
+$ pip3 install pipenv
+```
+
+
 # Decisions made
 * The assign position function is made taking into consideration that we start a race everytime the program executes.  
 States where a race is started should be considered invalid as I have defined the positions based on the premise that "The car that travels further, is the one that is the leader". I know that in the real world a car can travel more distance than the leader and still not be the leader due to the fact that all the cars do not always follow the racing line, but for this challenge, it works as intended.
