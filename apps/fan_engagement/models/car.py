@@ -47,7 +47,6 @@ class Car:
                 distance_covered = 0
                 mph = 0
 
-            # TODO: Update the position
             self.distance_travelled = self.distance_travelled + distance_covered
             self.curr_speed = mph
             self.__lat = car_coordinates.get('location').get('lat')
