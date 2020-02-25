@@ -6,4 +6,4 @@ pipenv install
 docker-compose stop
 docker-compose up -d
 echo All set! Launching application, now you can go to localhost:8084 and start watching the cars go around :)
-pipenv run py main.py
+pipenv run python3 main.py
