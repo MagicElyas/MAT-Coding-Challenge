@@ -14,7 +14,17 @@ WEATHER_MESSAGE_PROB = 1 #1/1000
 
 
 class Race:
+    """Class that processes messages coming from the gps and manages cars around the circuit
+    This class is provided with an mqtt client and it uses the following objects.
+    Cars -- List of the participant of the race
+    Client -- MQTT client provided in constructor
+    Car Positions -- Ordered car list by position
+    Car Topic -- The MQTT topic where the car should publish car-related messages
+    Event Topic -- The MQTT topic where the race should publish its events
+    messages files -- Different reactions and event strings stored in files
+    """
     def __init__(self, client: mqtt.Client, car_topic, event_topic):
+        """Construct the object"""
         self.__cars = {}  # Using a dictionary for fast search
         self.__client = client
         self.__car_positions = []
@@ -31,9 +41,14 @@ class Race:
             self.__weather = json.load(file)
 
     def __add_car_to_the_race(self, car: Car):
+        """Adds a car to the participants list"""
         self.__cars[car.get_car_index()] = car
 
     def update_car_info(self, car_coordinates: dict):
+        """Function that updates a car information and throws carStatus events if necessary
+        If the car does not exist, it is build and added to the participants.
+        Receives carCoordinates object
+        """
         if CarCoordinates.validate_car_coordinates(car_coordinates):
             if car_coordinates.get('carIndex') in self.__cars.keys():
                 car_to_update = self.__cars.get(car_coordinates.get('carIndex'))
@@ -53,6 +68,9 @@ class Race:
             pass
 
     def __assign_position(self, timestamp: float):
+        """Function that assigns positions to the cars and throws events about it
+        It also has the power of throwing weather and DRS events
+        """
         car_positions = list(self.__cars.values())
         # Loading the "old" car positions list to check if there is a change
         old_positions = self.__car_positions
@@ -73,6 +91,7 @@ class Race:
             self.__throw_drs_events(timestamp)
 
     def __throw_drs_events(self, timestamp):
+        """Function that based on a probability throws an DRS event if 2 cars are close enough"""
         for i in range(0, len(self.__car_positions)-1):
             if math.fabs(self.__car_positions[i].distance_travelled -
                          self.__car_positions[i+1].distance_travelled) < DRS_ZONE:
@@ -86,6 +105,7 @@ class Race:
                     self.publish_event(json.dumps(event))
 
     def __throw_team_radios(self, car_index, timestamp):
+        """Throw a funny (or not) team radio event with certain probability"""
         n = random.randint(0, 100)
         # Rare event
         if n < TEAM_RADIO_MESSAGE_PROB:
@@ -97,7 +117,10 @@ class Race:
             self.publish_event(json.dumps(event))
 
     def __throw_weather_events(self, timestamp):
-        n = random.randint(0, 1000) #Rare event
+        """Throw weather change event with certain probability
+        Limitations -- Since we can't control the car behaviour, we can't simulate wet conditions
+        """
+        n = random.randint(0, 1000) #Rarest event
         if n < WEATHER_MESSAGE_PROB:
             event = {
                 'timestamp': timestamp,
@@ -106,6 +129,7 @@ class Race:
             self.publish_event(json.dumps(event))
 
     def __throw_event_if_positions_changed(self, car_positions, old_positions, timestamp: float):
+        """Throws overtake events if a car (or more) overtakes another"""
         discrepant_car_indices = []
         self.__obtain_position_changes(car_positions, discrepant_car_indices, old_positions)
         if discrepant_car_indices and len(discrepant_car_indices) >= 2:
@@ -122,22 +146,28 @@ class Race:
 
     @staticmethod
     def __obtain_position_changes(car_positions, discrepant_car_indices, old_positions):
+        """Returns a list with the car indexes that have changed position"""
         for c in car_positions:
             if c in old_positions:
                 if car_positions.index(c) != old_positions.index(c):
                     discrepant_car_indices.append(c.get_car_index())
 
     def publish_car_status(self, report):
+        """Uses the MQTT client to publish car status messages"""
         self.__client.publish(topic=self.__car_topic, payload=report)
 
     def publish_event(self, event):
+        """Uses the MQTT client to publish event messages"""
         self.__client.publish(topic=self.__event_topic, payload=event)
 
     def get_participants(self):
+        """Returns participants of the race"""
         return self.__cars
 
     def get_race_distance(self):
+        """Returns the distance covered by the leader of the race"""
         return self.__race_distance
 
     def get_client(self):
+        """Returns the MQTT client"""
         return self.__client
